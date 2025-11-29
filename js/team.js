@@ -97,7 +97,9 @@ function showTeamMemberForm(memberId = null) {
     document.getElementById('team-member-form').reset();
   }
   
-  populateProjectDropdown('team-member-projects', true);
+  if (typeof populateProjectDropdown === 'function') {
+    populateProjectDropdown('team-member-projects', true);
+  }
   formContainer.style.display = 'block';
 }
 
