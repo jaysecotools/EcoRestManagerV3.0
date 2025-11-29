@@ -44,10 +44,23 @@ function showProjectForm(projectId = null) {
         const img = document.createElement('img');
         img.src = photo.data || photo.url;
         img.className = 'photo-thumbnail';
+        img.style.width = '100px';
+        img.style.height = '100px';
+        img.style.objectFit = 'cover';
         
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'delete-photo';
         deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+        deleteBtn.style.position = 'absolute';
+        deleteBtn.style.top = '2px';
+        deleteBtn.style.right = '2px';
+        deleteBtn.style.background = 'rgba(0,0,0,0.5)';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.borderRadius = '50%';
+        deleteBtn.style.width = '20px';
+        deleteBtn.style.height = '20px';
+        deleteBtn.style.cursor = 'pointer';
         deleteBtn.onclick = (ev) => {
           ev.stopPropagation();
           imgContainer.remove();
@@ -75,6 +88,8 @@ function showProjectForm(projectId = null) {
     
     document.getElementById('projects-list').style.display = 'none';
     formContainer.style.display = 'block';
+    
+    console.log('Project form shown, temp photos:', state.tempPhotos.project.length);
   } catch (error) {
     console.error('Error showing project form:', error);
     showToast('Error loading project form: ' + error.message, 'error');
@@ -107,6 +122,8 @@ function handleProjectSubmit(e) {
       const projectId = document.getElementById('project-id').value;
       const isEdit = !!projectId;
       
+      console.log('Saving project, temp photos:', state.tempPhotos.project.length);
+      
       const project = {
         id: projectId || 'project-' + Date.now(),
         name: document.getElementById('project-name').value.trim(),
@@ -122,11 +139,14 @@ function handleProjectSubmit(e) {
         description: document.getElementById('project-description').value.trim(),
         startDate: document.getElementById('project-start-date').value,
         endDate: document.getElementById('project-end-date').value || null,
-        area: parseFloat(document.getElementById('project-area').value) || null,
-        budget: parseFloat(document.getElementById('project-budget').value) || null,
-        photos: [...state.tempPhotos.project],
+        area: document.getElementById('project-area').value ? parseFloat(document.getElementById('project-area').value) : null,
+        budget: document.getElementById('project-budget').value ? parseFloat(document.getElementById('project-budget').value) : null,
+        photos: [...state.tempPhotos.project], // This should now contain the uploaded photos
         milestones: isEdit ? (state.projects.find(p => p.id === projectId)?.milestones || []) : []
       };
+      
+      console.log('Project to save:', project);
+      console.log('Project photos count:', project.photos.length);
       
       if (isEdit) {
         const index = state.projects.findIndex(p => p.id === projectId);
@@ -145,7 +165,11 @@ function handleProjectSubmit(e) {
       renderProjects();
       updateDashboard();
       hideProjectForm();
-      e.target.reset();
+      
+      // Reset the form and temp photos
+      document.getElementById('project-form').reset();
+      state.tempPhotos.project = [];
+      
       if (typeof updateProjectMapMarkers === 'function') updateProjectMapMarkers();
     } catch (error) {
       console.error('Error saving project:', error);
