@@ -1,0 +1,16 @@
+ecological-restoration-project-manager/
+├── index.html
+├── css/
+│   └── styles.css
+└── js/
+    ├── app.js
+    ├── state.js
+    ├── navigation.js
+    ├── charts.js
+    ├── maps.js
+    ├── data-management.js
+    ├── projects.js
+    ├── monitoring.js
+    ├── team.js
+    ├── reports.js
+    └── utils.js

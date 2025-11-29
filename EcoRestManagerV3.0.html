@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecological Restoration Project Manager</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner" style="width: 40px; height: 40px; margin: 0 auto 15px;"></div>
+      <p>Loading...</p>
+    </div>
+  </div>
+
+  <header>
+    <div class="container header-content">
+      <div class="logo">
+        <i class="fas fa-seedling"></i>
+        <h1>Ecological Restoration Manager</h1>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#" class="nav-link active" data-section="dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+          <li><a href="#" class="nav-link" data-section="projects"><i class="fas fa-folder"></i> Projects</a></li>
+          <li><a href="#" class="nav-link" data-section="monitoring"><i class="fas fa-binoculars"></i> Monitoring</a></li>
+          <li><a href="#" class="nav-link" data-section="reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
+          <li><a href="#" class="nav-link" data-section="team"><i class="fas fa-users"></i> Team</a></li>
+          <li><a href="#" class="nav-link" data-section="data"><i class="fas fa-database"></i> Data</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="dashboard" class="section active">
+      <div class="card">
+        <h2>Restoration Dashboard</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Active Projects</h3>
+            <p id="active-projects-count" style="font-size: 2.5rem; font-weight: 300;">0</p>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Total: <span id="total-projects-count">0</span></p>
+          </div>
+          <div class="card">
+            <h3>Monitoring Points</h3>
+            <p id="monitoring-points-count" style="font-size: 2.5rem; font-weight: 300;">0</p>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Observations: <span id="total-observations-count">0</span></p>
+          </div>
+          <div class="card">
+            <h3>Pending Actions</h3>
+            <p id="pending-actions-count" style="font-size: 2.5rem; font-weight: 300;">0</p>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Overdue: <span id="overdue-actions-count">0</span></p>
+          </div>
+          <div class="card">
+            <h3>Team Members</h3>
+            <p id="team-members-count" style="font-size: 2.5rem; font-weight: 300;">0</p>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Active: <span id="active-team-count">0</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Project Locations</h2>
+        <div id="projects-map" class="map-container"></div>
+      </div>
+
+      <div class="card">
+        <h2>Recent Activities</h2>
+        <div id="recent-activities">
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No recent activities</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2>Restoration Projects</h2>
+          <button class="btn" id="divine-handler-onclick-1764374051331-0"><i class="fas fa-plus"></i> New Project</button>
+        </div>
+        
+        <div class="search-filter">
+          <div class="search-box">
+            <input type="text" id="project-search" class="form-control" placeholder="Search projects..." onkeyup="filterProjects()">
+          </div>
+          <div class="filter-select">
+            <select id="project-type-filter" class="form-control">
+              <option value="">All Types</option>
+              <option value="riparian">Riparian</option>
+              <option value="coastal">Coastal</option>
+              <option value="wetland">Wetland</option>
+              <option value="forest">Forest</option>
+              <option value="grassland">Grassland</option>
+              <option value="urban">Urban</option>
+              <option value="mine">Mine Site</option>
+              <option value="agricultural">Agricultural</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="tab-container">
+          <div class="tab active" id="divine-handler-onclick-1764374051331-1">All Projects</div>
+          <div class="tab" id="divine-handler-onclick-1764374051331-2">Active</div>
+          <div class="tab" id="divine-handler-onclick-1764374051331-3">Planned</div>
+          <div class="tab" id="divine-handler-onclick-1764374051331-4">Completed</div>
+        </div>
+        
+        <div id="projects-list" class="grid" style="margin-top: 20px;"></div>
+      </div>
+
+      <div id="project-form-container" class="card" style="display: none;">
+        <h2 id="project-form-title">Create New Project</h2>
+        <form id="project-form">
+          <input type="hidden" id="project-id">
+          
+          <div class="form-group">
+            <label for="project-name">Project Name *</label>
+            <input type="text" id="project-name" class="form-control" required="">
+            <div class="error-message" id="project-name-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="project-type">Restoration Type *</label>
+            <select id="project-type" class="form-control" required="">
+              <option value="">Select a type</option>
+              <option value="riparian">Riparian</option>
+              <option value="coastal">Coastal</option>
+              <option value="wetland">Wetland</option>
+              <option value="forest">Forest</option>
+              <option value="grassland">Grassland</option>
+              <option value="urban">Urban</option>
+              <option value="mine">Mine Site</option>
+              <option value="agricultural">Agricultural</option>
+            </select>
+            <div class="error-message" id="project-type-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="project-status">Status *</label>
+            <select id="project-status" class="form-control" required="">
+              <option value="planned">Planned</option>
+              <option value="active" selected="">Active</option>
+              <option value="completed">Completed</option>
+              <option value="on-hold">On Hold</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="project-location">Location Name *</label>
+            <input type="text" id="project-location" class="form-control" required="">
+            <div class="error-message" id="project-location-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label>Select Location on Map *</label>
+            <div id="project-location-map" class="map-container"></div>
+            <input type="hidden" id="project-lat" required="">
+            <input type="hidden" id="project-lng" required="">
+            <div class="error-message" id="project-coords-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="project-start-date">Start Date *</label>
+            <input type="date" id="project-start-date" class="form-control" required="">
+            <div class="error-message" id="project-start-date-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="project-end-date">End Date</label>
+            <input type="date" id="project-end-date" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="project-area">Area (hectares)</label>
+            <input type="number" id="project-area" class="form-control" min="0" step="0.1">
+          </div>
+          
+          <div class="form-group">
+            <label for="project-budget">Budget ($)</label>
+            <input type="number" id="project-budget" class="form-control" min="0">
+          </div>
+          
+          <div class="form-group">
+            <label for="project-description">Description</label>
+            <textarea id="project-description" class="form-control" rows="3"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Project Photos</label>
+            <div id="photo-upload" class="photo-upload-container">
+              <i class="fas fa-camera fa-2x" style="color: var(--text-secondary); margin-bottom: 10px;"></i>
+              <p>Click to upload photos or drag and drop</p>
+              <input type="file" id="project-photos" multiple="" accept="image/*" style="display: none;">
+            </div>
+            <div id="photo-preview" class="photo-preview"></div>
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" id="divine-handler-onclick-1764374051331-6">Cancel</button>
+            <button type="submit" class="btn" id="project-form-submit">
+              <span id="submit-text">Save Project</span>
+              <span id="submit-spinner" class="spinner" style="display: none;"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="monitoring" class="section">
+      <div class="card">
+        <h2>Monitoring Points</h2>
+        <div class="tab-container">
+          <div class="tab active" id="divine-handler-onclick-1764374051331-7">All Points</div>
+          <div class="tab" id="divine-handler-onclick-1764374051331-8">Add New</div>
+          <div class="tab" id="divine-handler-onclick-1764374051331-9">Observations</div>
+        </div>
+        
+        <div id="monitoring-all" class="tab-content active">
+          <div class="search-filter">
+            <div class="search-box">
+              <input type="text" id="monitoring-search" class="form-control" placeholder="Search monitoring points..." onkeyup="filterMonitoringPoints()">
+            </div>
+            <div class="filter-select">
+              <select id="monitoring-project-filter" class="form-control">
+                <option value="">All Projects</option>
+              </select>
+            </div>
+          </div>
+          <div id="monitoring-points-list" class="grid"></div>
+        </div>
+        
+        <div id="monitoring-new" class="tab-content">
+          <form id="monitoring-form">
+            <input type="hidden" id="monitoring-id">
+            
+            <div class="form-group">
+              <label for="monitoring-project">Project *</label>
+              <select id="monitoring-project" class="form-control" required="">
+                <option value="">Select a project</option>
+              </select>
+              <div class="error-message" id="monitoring-project-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="monitoring-name">Point Name *</label>
+              <input type="text" id="monitoring-name" class="form-control" required="">
+              <div class="error-message" id="monitoring-name-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="monitoring-type">Point Type *</label>
+              <select id="monitoring-type" class="form-control" required="">
+                <option value="">Select a type</option>
+                <option value="vegetation">Vegetation</option>
+                <option value="water-quality">Water Quality</option>
+                <option value="wildlife">Wildlife</option>
+                <option value="soil">Soil</option>
+                <option value="erosion">Erosion</option>
+              </select>
+              <div class="error-message" id="monitoring-type-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label>Select Location on Map *</label>
+              <div id="monitoring-location-map" class="map-container"></div>
+              <input type="hidden" id="monitoring-lat" required="">
+              <input type="hidden" id="monitoring-lng" required="">
+              <div class="error-message" id="monitoring-coords-error"></div>
+            </div>
+            
+            <div class="form-group">
+              <label>Monitoring Photos</label>
+              <div id="monitoring-photo-upload" class="photo-upload-container">
+                <i class="fas fa-camera fa-2x" style="color: var(--text-secondary); margin-bottom: 10px;"></i>
+                <p>Click to upload photos or drag and drop</p>
+                <input type="file" id="monitoring-photos" multiple="" accept="image/*" style="display: none;">
+              </div>
+              <div id="monitoring-photo-preview" class="photo-preview"></div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" class="btn btn-secondary" id="divine-handler-onclick-1764374051331-11">Cancel</button>
+              <button type="submit" class="btn" id="monitoring-form-submit">
+                <span id="monitoring-submit-text">Save Monitoring Point</span>
+                <span id="monitoring-submit-spinner" class="spinner" style="display: none;"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <div id="monitoring-observations" class="tab-content">
+          <div class="search-filter">
+            <div class="filter-select">
+              <label for="observation-project">Filter by Project</label>
+              <select id="observation-project" class="form-control">
+                <option value="">All Projects</option>
+              </select>
+            </div>
+            <div class="filter-select">
+              <label for="observation-date-filter">Filter by Date</label>
+              <select id="observation-date-filter" class="form-control">
+                <option value="all">All Dates</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="observations-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reports" class="section">
+      <div class="card">
+        <h2>Project Reports</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Project Status</h3>
+            <div class="chart-container">
+              <canvas id="project-status-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Restoration Types</h3>
+            <div class="chart-container">
+              <canvas id="restoration-types-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Project Timeline</h3>
+            <div class="chart-container">
+              <canvas id="project-timeline-chart"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Monitoring Frequency</h3>
+            <div class="chart-container">
+              <canvas id="monitoring-frequency-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Generate Report</h2>
+        <form id="report-form">
+          <div class="form-group">
+            <label for="report-project">Select Project</label>
+            <select id="report-project" class="form-control">
+              <option value="">All Projects</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="report-type">Report Type</label>
+            <select id="report-type" class="form-control" required="">
+              <option value="summary">Project Summary</option>
+              <option value="progress">Progress Report</option>
+              <option value="monitoring">Monitoring Data</option>
+              <option value="full">Full Project Report</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="report-format">Output Format</label>
+            <select id="report-format" class="form-control" required="">
+              <option value="pdf">PDF</option>
+              <option value="html">HTML</option>
+              <option value="csv">CSV (Data Only)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="report-date-range">Date Range</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="date" id="report-start-date" class="form-control">
+              <span style="align-self: center;">to</span>
+              <input type="date" id="report-end-date" class="form-control">
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: flex-end;">
+            <button type="submit" class="btn" id="report-form-submit">
+              <i class="fas fa-file-pdf"></i> Generate Report
+              <span id="report-submit-spinner" class="spinner" style="display: none; margin-left: 8px;"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+    
+    <section id="team" class="section">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2>Team Members</h2>
+          <button class="btn" id="divine-handler-onclick-1764374051331-12"><i class="fas fa-plus"></i> Add Member</button>
+        </div>
+        
+        <div class="search-filter">
+          <div class="search-box">
+            <input type="text" id="team-search" class="form-control" placeholder="Search team members..." onkeyup="filterTeamMembers()">
+          </div>
+          <div class="filter-select">
+            <select id="team-role-filter" class="form-control">
+              <option value="">All Roles</option>
+              <option value="project-manager">Project Manager</option>
+              <option value="ecologist">Ecologist</option>
+              <option value="field-technician">Field Technician</option>
+              <option value="volunteer">Volunteer</option>
+              <option value="researcher">Researcher</option>
+              <option value="administrator">Administrator</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="team-members-list" style="margin-top: 20px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Assigned Projects</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div id="team-member-form-container" class="card" style="display: none;">
+        <h2 id="team-member-form-title">Add Team Member</h2>
+        <form id="team-member-form">
+          <input type="hidden" id="team-member-id">
+          
+          <div class="form-group">
+            <label for="team-member-name">Full Name *</label>
+            <input type="text" id="team-member-name" class="form-control" required="">
+            <div class="error-message" id="team-member-name-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="team-member-role">Role *</label>
+            <select id="team-member-role" class="form-control" required="">
+              <option value="">Select a role</option>
+              <option value="project-manager">Project Manager</option>
+              <option value="ecologist">Ecologist</option>
+              <option value="field-technician">Field Technician</option>
+              <option value="volunteer">Volunteer</option>
+              <option value="researcher">Researcher</option>
+              <option value="administrator">Administrator</option>
+            </select>
+            <div class="error-message" id="team-member-role-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="team-member-email">Email *</label>
+            <input type="email" id="team-member-email" class="form-control" required="">
+            <div class="error-message" id="team-member-email-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="team-member-phone">Phone</label>
+            <input type="tel" id="team-member-phone" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="team-member-status">Status *</label>
+            <select id="team-member-status" class="form-control" required="">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="team-member-projects">Assigned Projects</label>
+            <select id="team-member-projects" class="form-control" multiple="" style="height: 120px;"></select>
+            <small>Hold Ctrl/Cmd to select multiple projects</small>
+          </div>
+          
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" id="divine-handler-onclick-1764374051331-13">Cancel</button>
+            <button type="submit" class="btn" id="team-member-form-submit">
+              <span id="team-submit-text">Save Member</span>
+              <span id="team-submit-spinner" class="spinner" style="display: none;"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="data" class="section">
+      <div class="card">
+        <h2>Data Management</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Export Data</h3>
+            <p>Export all project data, monitoring points, and observations for backup or analysis.</p>
+            <button class="btn" style="margin-top: 15px;" id="divine-handler-onclick-1764374051331-14">
+              <i class="fas fa-file-export"></i> Export Data
+            </button>
+          </div>
+          
+          <div class="card">
+            <h3>Import Data</h3>
+            <p>Import previously exported data to restore or merge with existing data.</p>
+            <button class="btn" style="margin-top: 15px;" id="divine-handler-onclick-1764374051331-15">
+              <i class="fas fa-file-import"></i> Import Data
+            </button>
+          </div>
+          
+          <div class="card">
+            <h3>Backup Data</h3>
+            <p>Create a backup of your current data in the browser's local storage.</p>
+            <button class="btn" style="margin-top: 15px;" id="divine-handler-onclick-1764374051331-16">
+              <i class="fas fa-save"></i> Backup Now
+            </button>
+          </div>
+          
+          <div class="card">
+            <h3>Data Statistics</h3>
+            <div style="margin-top: 15px;">
+              <p><strong>Projects:</strong> <span id="data-projects-count">0</span></p>
+              <p><strong>Monitoring Points:</strong> <span id="data-monitoring-count">0</span></p>
+              <p><strong>Observations:</strong> <span id="data-observations-count">0</span></p>
+              <p><strong>Team Members:</strong> <span id="data-team-count">0</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Storage Information</h2>
+        <div id="storage-info">
+          <p>Checking storage usage...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-project-title">Project Details</h2>
+        <button class="close-modal" id="divine-handler-onclick-1764374051331-17">×</button>
+      </div>
+      <div id="modal-project-content"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="divine-handler-onclick-1764374051331-18">Close</button>
+        <button class="btn" id="divine-handler-onclick-1764374051331-19">Edit Project</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="observation-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-observation-title">Add Observation</h2>
+        <button class="close-modal" id="divine-handler-onclick-1764374051331-20">×</button>
+      </div>
+      <div id="modal-observation-content">
+        <form id="observation-form">
+          <input type="hidden" id="observation-id">
+          <input type="hidden" id="observation-point-id">
+          
+          <div class="form-group">
+            <label for="observation-date">Date *</label>
+            <input type="date" id="observation-date" class="form-control" required="">
+            <div class="error-message" id="observation-date-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="observation-notes">Notes *</label>
+            <textarea id="observation-notes" class="form-control" rows="3" required=""></textarea>
+            <div class="error-message" id="observation-notes-error"></div>
+          </div>
+          
+          <div class="form-group">
+            <label for="observation-weather">Weather Conditions</label>
+            <input type="text" id="observation-weather" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label for="observation-temp">Temperature (°C)</label>
+            <input type="number" id="observation-temp" class="form-control" step="0.1">
+          </div>
+          
+          <div class="form-group">
+            <label>Photos</label>
+            <div id="observation-photo-upload" class="photo-upload-container">
+              <i class="fas fa-camera fa-2x" style="color: var(--text-secondary); margin-bottom: 10px;"></i>
+              <p>Click to upload photos or drag and drop</p>
+              <input type="file" id="observation-photos" multiple="" accept="image/*" style="display: none;">
+            </div>
+            <div id="observation-photo-preview" class="photo-preview"></div>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="divine-handler-onclick-1764374051331-22">Cancel</button>
+            <button type="submit" class="btn">Save Observation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <div class="toast-container" id="toast-container"></div>
+  <input type="file" id="import-file" accept=".json" style="display: none;">
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Load JavaScript files in dependency order -->
+  <script src="js/state.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/data-management.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/maps.js"></script>
+  <script src="js/projects.js"></script>
+  <script src="js/monitoring.js"></script>
+  <script src="js/team.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
