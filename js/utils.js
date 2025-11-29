@@ -82,10 +82,11 @@ function handlePhotoUpload(files, type) {
       return;
     }
     
-    if (file.size > 2 * 1024 * 1024) {
-      showToast('File size too large. Please select files smaller than 2MB.', 'warning');
-      return;
-    }
+    // REMOVED FILE SIZE LIMIT - was causing issues
+    // if (file.size > 2 * 1024 * 1024) {
+    //   showToast('File size too large. Please select files smaller than 2MB.', 'warning');
+    //   return;
+    // }
     
     const reader = new FileReader();
     reader.onload = function(e) {
