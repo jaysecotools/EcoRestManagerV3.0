@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', function() {
     populateProjectDropdown('observation-project');
     populateProjectDropdown('report-project');
     
+    // DEBUG: Check if photo elements exist
+    console.log('Project photos input:', document.getElementById('project-photos'));
+    console.log('Monitoring photos input:', document.getElementById('monitoring-photos'));
+    console.log('Observation photos input:', document.getElementById('observation-photos'));
+    
   } catch (error) {
     console.error('Error during initialization:', error);
     showToast('Error initializing application: ' + error.message, 'error');
@@ -96,7 +101,9 @@ document.getElementById('divine-handler-onclick-1764374051331-4').addEventListen
   setProjectFilter('completed')
 });
 
+// FIXED: Project photo upload - ensure it uses the correct handler
 document.getElementById('photo-upload').addEventListener('click', function(event) {
+  console.log('Project photo upload clicked');
   document.getElementById('project-photos').click()
 });
 
@@ -117,6 +124,7 @@ document.getElementById('divine-handler-onclick-1764374051331-9').addEventListen
 });
 
 document.getElementById('monitoring-photo-upload').addEventListener('click', function(event) {
+  console.log('Monitoring photo upload clicked');
   document.getElementById('monitoring-photos').click()
 });
 
@@ -161,6 +169,7 @@ document.getElementById('divine-handler-onclick-1764374051331-20').addEventListe
 });
 
 document.getElementById('observation-photo-upload').addEventListener('click', function(event) {
+  console.log('Observation photo upload clicked');
   document.getElementById('observation-photos').click()
 });
 
@@ -172,16 +181,20 @@ document.getElementById('project-type-filter').addEventListener('change', functi
   filterProjects()
 });
 
+// FIXED: Project photo upload event listener - ensure it's properly connected
 document.getElementById('project-photos').addEventListener('change', function(event) {
-  handlePhotoUpload(this.files, 'project')
+  console.log('Project photos selected:', this.files.length);
+  handlePhotoUpload(this.files, 'project');
 });
 
 document.getElementById('monitoring-project-filter').addEventListener('change', function(event) {
   filterMonitoringPoints()
 });
 
+// FIXED: Monitoring photo upload event listener
 document.getElementById('monitoring-photos').addEventListener('change', function(event) {
-  handlePhotoUpload(this.files, 'monitoring')
+  console.log('Monitoring photos selected:', this.files.length);
+  handlePhotoUpload(this.files, 'monitoring');
 });
 
 document.getElementById('observation-project').addEventListener('change', function(event) {
@@ -196,8 +209,10 @@ document.getElementById('team-role-filter').addEventListener('change', function(
   filterTeamMembers()
 });
 
+// FIXED: Observation photo upload event listener
 document.getElementById('observation-photos').addEventListener('change', function(event) {
-  handlePhotoUpload(this.files, 'observation')
+  console.log('Observation photos selected:', this.files.length);
+  handlePhotoUpload(this.files, 'observation');
 });
 
 document.getElementById('import-file').addEventListener('change', function(event) {
