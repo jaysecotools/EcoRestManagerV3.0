@@ -21,7 +21,7 @@ function showMonitoringTab(tabId) {
     }
     
     if (tabId === 'new') {
-      populateProjectDropdown('monitoring-project');
+      if (typeof populateProjectDropdown === 'function') populateProjectDropdown('monitoring-project');
       document.getElementById('monitoring-photo-preview').innerHTML = '';
       state.tempPhotos.monitoring = [];
     } else if (tabId === 'observations') {
