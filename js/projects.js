@@ -146,7 +146,7 @@ function handleProjectSubmit(e) {
       updateDashboard();
       hideProjectForm();
       e.target.reset();
-      updateProjectMapMarkers();
+      if (typeof updateProjectMapMarkers === 'function') updateProjectMapMarkers();
     } catch (error) {
       console.error('Error saving project:', error);
       showToast('Error saving project: ' + error.message, 'error');
@@ -320,7 +320,7 @@ function deleteProject(projectId) {
     saveData();
     renderProjects();
     updateDashboard();
-    updateProjectMapMarkers();
+    if (typeof updateProjectMapMarkers === 'function') updateProjectMapMarkers();
     
     showToast('Project deleted successfully', 'success');
   } catch (error) {
@@ -430,7 +430,7 @@ function viewProjectDetails(projectId) {
   
   // Initialize the project detail map after the modal is displayed
   setTimeout(() => {
-    initProjectDetailMap(project);
+    if (typeof initProjectDetailMap === 'function') initProjectDetailMap(project);
   }, 100);
 }
 
